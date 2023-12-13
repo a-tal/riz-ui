@@ -1,0 +1,51 @@
+* {
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+body,
+.v-main {
+  background-color: rgba(
+    var(--v-theme-background),
+    var(--v-high-emphasis-opacity)
+  );
+  min-width: 315px;
+}
+
+a {
+  text-decoration: none;
+  color: rgba(var(--v-theme-primary), var(--v-high-emphasis-opacity));
+}
+
+a:visited {
+  color: rgba(var(--v-theme-primary), var(--v-high-emphasis-opacity));
+}
+
+pre {
+  font-family: 'Roboto Mono', monospace;
+  display: inline-block;
+  color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+}
+
+.muted {
+  color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
+.no-bg {
+  background-color: unset !important;
+}
+
+.self-align-center {
+  align-self: center;
+}
+
+.self-align-bottom {
+  align-self: self-end;
+}
