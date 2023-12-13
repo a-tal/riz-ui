@@ -6,6 +6,7 @@ import {
   iLight,
   iRoom,
 } from '@/models';
+import { v4 } from 'uuid';
 import { Ref, ref } from 'vue';
 
 const BASE = process.env.VUE_APP_RIZ_API ?? '/v1';
@@ -14,9 +15,30 @@ const HEADERS = Object.freeze({
   'Content-Type': 'application/json',
 });
 
-export class API {
+export interface API {
   rooms: Ref<Array<Room>>;
+  loaded: Ref<boolean>;
 
+  fetchRooms(): Promise<void>;
+  fetchRoom(room: string): Promise<Room | boolean>;
+  createRoom(name: string): Promise<void>;
+  updateRoom(id: string, name: string): Promise<void>;
+  deleteRoom(id: string): Promise<void>;
+  createLight(roomId: string, ip: string, name?: string): Promise<void>;
+  updateLight(
+    roomId: string,
+    lightId: string,
+    ip: string,
+    name?: string,
+  ): Promise<void>;
+  deleteLight(roomId: string, lightId: string): Promise<void>;
+  lighting(roomId: string, lightId: string, req: LightRequest): Promise<void>;
+  roomLighting(roomId: string, req: LightRequest): Promise<void>;
+  status(roomId: string, lightId?: string): Promise<void>;
+}
+
+export class DemoAPI implements API {
+  rooms: Ref<Array<Room>>;
   loaded: Ref<boolean>;
 
   constructor() {
@@ -24,6 +46,97 @@ export class API {
     this.loaded = ref(false);
   }
 
+  async fetchRooms(): Promise<void> {
+    if (!this.loaded.value) {
+      this.loaded.value = true;
+    }
+  }
+
+  async fetchRoom(room: string): Promise<boolean | Room> {
+    return new Room(room, 'Demo Room');
+  }
+
+  async createRoom(name: string): Promise<void> {
+    this.rooms.value.push(new Room(v4(), name));
+  }
+
+  async updateRoom(id: string, name: string): Promise<void> {
+    const room = this.rooms.value.find((r) => r.id === id);
+    if (room && room.name !== name) {
+      room.name = name;
+    }
+  }
+
+  async deleteRoom(id: string): Promise<void> {
+    const index = this.rooms.value.findIndex((r) => r.id === id);
+    if (index >= 0) {
+      this.rooms.value.splice(index, 1);
+    }
+  }
+
+  async createLight(roomId: string, ip: string, name?: string): Promise<void> {
+    const room = this.rooms.value.find((r) => r.id === roomId);
+    if (room) {
+      room.addLight(new Light(v4(), ip, name));
+    }
+  }
+
+  async updateLight(
+    roomId: string,
+    lightId: string,
+    ip: string,
+    name?: string,
+  ): Promise<void> {
+    const room = this.rooms.value.find((r) => r.id === roomId);
+    if (room) {
+      const light = room.lights.find((l) => l.id === lightId);
+      if (light) {
+        light.ip = ip;
+        light.name = name;
+      }
+    }
+  }
+
+  async deleteLight(roomId: string, lightId: string): Promise<void> {
+    const room = this.rooms.value.find((r) => r.id === roomId);
+    if (room) {
+      const light = room.lights.find((l) => l.id === lightId);
+      if (light) {
+        room.removeLight(light);
+      }
+    }
+  }
+
+  async lighting(
+    roomId: string,
+    lightId: string,
+    req: LightRequest,
+  ): Promise<void> {
+    this.updateLighting(req, roomId, lightId);
+  }
+
+  async roomLighting(roomId: string, req: LightRequest): Promise<void> {
+    this.updateLighting(req, roomId);
+  }
+
+  async status(_roomId: string, _lightId?: string): Promise<void> {
+    return;
+  }
+
+  // update the lights in the room, alternatively restricted to a single bulb
+  protected updateLighting(
+    req: LightRequest,
+    roomId: string,
+    lightId?: string,
+  ): void {
+    const room = this.rooms.value.find((r) => r.id === roomId);
+    if (room) {
+      room.updateLighting(req, lightId);
+    }
+  }
+}
+
+export class API extends DemoAPI {
   // GET: /rooms
   async fetchRooms(): Promise<void> {
     if (!this.loaded.value) {
@@ -274,20 +387,11 @@ export class API {
       console.error('Failed to get status:', e);
     }
   }
+}
 
-  // update the lights in the room, alternatively restricted to a single bulb
-  private updateLighting(
-    req: LightRequest,
-    roomId: string,
-    lightId?: string,
-  ): void {
-    const room = this.rooms.value.find((r) => r.id === roomId);
-    if (room) {
-      for (const light of room.lights) {
-        if (lightId === undefined || light.id === lightId) {
-          light.updateLighting(req);
-        }
-      }
-    }
+export function createAPI(): API {
+  if (BASE === '__DEMO__') {
+    return new DemoAPI();
   }
+  return new API();
 }

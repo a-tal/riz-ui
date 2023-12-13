@@ -42,6 +42,14 @@ export class Room {
     this.addCallback = addCallback;
     this.deleteCallback = deleteCallback;
   }
+
+  updateLighting(req: LightRequest, lightId?: string): void {
+    for (const light of this.lights) {
+      if (lightId === undefined || light.id === lightId) {
+        light.updateLighting(req);
+      }
+    }
+  }
 }
 
 export interface iLight {

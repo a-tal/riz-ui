@@ -1,4 +1,4 @@
-import { API } from '@/api';
+import { API, createAPI } from '@/api';
 import '@/styles/style.scss';
 import { createApp } from 'vue';
 
@@ -18,7 +18,7 @@ loadFonts();
 
 const app = createApp(App);
 
-app.config.globalProperties.$api = new API();
+app.config.globalProperties.$api = createAPI();
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
