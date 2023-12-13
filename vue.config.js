@@ -15,5 +15,5 @@ module.exports = defineConfig({
       entry: 'src/main.ts',
       title: 'Riz',
     },
-  }
+  },
 });

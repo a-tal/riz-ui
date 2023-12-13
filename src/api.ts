@@ -8,7 +8,7 @@ import {
 } from '@/models';
 import { Ref, ref } from 'vue';
 
-const BASE = process.env.VUE_APP_RIZ_API ?? 'http://localhost:8080/v1';
+const BASE = process.env.VUE_APP_RIZ_API ?? '/v1';
 
 const HEADERS = Object.freeze({
   'Content-Type': 'application/json',

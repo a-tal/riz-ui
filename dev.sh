@@ -5,6 +5,8 @@ if [[ "$1" == "--container" ]] || [[ "$1" == "-c" ]]; then
   CONTAINER=true
 fi
 
+export VUE_APP_RIZ_API="http://localhost:8080/v1"
+
 if $CONTAINER; then
   npm run build || { echo "build failure"; exit 1; }
   docker build -t riz-ui:dev .
