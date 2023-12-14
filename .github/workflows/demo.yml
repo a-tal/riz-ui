@@ -5,16 +5,30 @@ on:
     branches:
       - 'master'
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
 jobs:
-  build_demo:
+  build:
     runs-on: ubuntu-latest
 
     env:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
       VUE_APP_RIZ_API: __DEMO__
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v3
@@ -25,9 +39,11 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
 
-      - name: Publish dist to GitHub Pages
-        uses: tsunematsu21/actions-publish-gh-pages@v1.0.2
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          dir: dist
-          branch: gh-pages
-          token: ${{ secrets.ACCESS_TOKEN }}
+          path: 'dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v3
