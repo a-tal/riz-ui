@@ -19,9 +19,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      VUE_APP_RIZ_API: __DEMO__
+
+    environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-      VUE_APP_RIZ_API: __DEMO__
 
     steps:
       - name: Checkout repository
