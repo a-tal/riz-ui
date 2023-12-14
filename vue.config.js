@@ -3,6 +3,7 @@ process.env.VUE_APP_VERSION = process.env.npm_package_version;
 
 module.exports = defineConfig({
   transpileDependencies: true,
+  publicPath: process.env.VUE_APP_BASE || '/',
   devServer: { port: 8000 },
   lintOnSave: false,
   pluginOptions: {

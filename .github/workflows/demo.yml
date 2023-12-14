@@ -20,6 +20,7 @@ jobs:
 
     env:
       VUE_APP_RIZ_API: __DEMO__
+      VUE_APP_BASE: /riz-ui/
 
     environment:
       name: github-pages
