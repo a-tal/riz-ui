@@ -4,8 +4,8 @@
 </i></p>
 
 [![ci-badge]][ci] [![docker-badge]][docker] [![size-badge]][docker] ![lic-badge]
-</div>
 
+</div>
 
 ## Dev
 
@@ -40,8 +40,9 @@ Stale browser states may not be accurate. Some other user could change the state
 
 ## Demo
 
-- TODO
+https://a-tal.github.io/riz-ui/
 
+Has no API backend, but will act as if it did. You can create rooms and lights in them, change settings, etc.
 
 [ci-badge]: https://github.com/a-tal/riz-ui/actions/workflows/ci.yml/badge.svg
 [ci]: https://github.com/a-tal/riz-ui/actions/workflows/ci.yml

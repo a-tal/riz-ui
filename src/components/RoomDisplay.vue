@@ -85,7 +85,12 @@
           <template v-else>
             <v-tooltip text="Refresh status">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" icon @click="getStatus" size="24"
+                <v-btn
+                  v-bind="props"
+                  icon
+                  @click="getStatus"
+                  size="24"
+                  :disabled="!haveLights"
                   ><v-icon size="18" color="teal">mdi-reload</v-icon></v-btn
                 >
               </template>
@@ -98,14 +103,22 @@
         <v-btn-group variant="outlined" divided>
           <v-tooltip text="On (room)">
             <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" icon @click="powerOn"
+              <v-btn
+                v-bind="props"
+                icon
+                @click="powerOn"
+                :disabled="!haveLights"
                 ><v-icon color="green">mdi-power-on</v-icon></v-btn
               >
             </template>
           </v-tooltip>
           <v-tooltip text="Off (room)">
             <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" icon @click="powerOff"
+              <v-btn
+                v-bind="props"
+                icon
+                @click="powerOff"
+                :disabled="!haveLights"
                 ><v-icon color="red">mdi-power-off</v-icon></v-btn
               >
             </template>
@@ -113,7 +126,11 @@
 
           <v-tooltip text="Reboot (room)">
             <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" icon @click="powerCycle"
+              <v-btn
+                v-bind="props"
+                icon
+                @click="powerCycle"
+                :disabled="!haveLights"
                 ><v-icon color="yellow">mdi-power-cycle</v-icon></v-btn
               >
             </template>
@@ -129,7 +146,7 @@
             max-width="300px"
           >
             <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" color="blue"
+              <v-btn v-bind="props" color="blue" :disabled="!haveLights"
                 ><span class="text-blue">Scene</span>
                 <v-icon color="blue" class="pl-4 pr-2"
                   >mdi-television-classic</v-icon
@@ -137,7 +154,7 @@
               </v-btn>
             </template>
 
-            <v-card min-width="300">
+            <v-card max-width="300">
               <v-container fluid>
                 <v-row no-gutters>
                   <v-col cols="12" class="pt-2">
@@ -148,6 +165,8 @@
                       v-model="scene"
                       prepend-icon="mdi-television-classic"
                       density="compact"
+                      return-object
+                      item-title="name"
                       :items="scenes"
                     ></v-select>
                   </v-col>
@@ -171,7 +190,11 @@
           </v-menu>
 
           <template v-if="$vuetify.display.xs">
-            <v-btn color="purple" @click="showPicker = true">
+            <v-btn
+              color="purple"
+              @click="showPicker = true"
+              :disabled="!haveLights"
+            >
               <span class="text-purple">Color</span>
               <v-icon color="purple" class="pl-4 pr-2">mdi-eyedropper</v-icon>
             </v-btn>
@@ -192,7 +215,7 @@
 
           <v-menu v-else v-model="showPicker" :close-on-content-click="false">
             <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" color="purple">
+              <v-btn v-bind="props" color="purple" :disabled="!haveLights">
                 <span class="text-purple">Color</span>
                 <v-icon color="purple" class="pl-4 pr-2"
                   >mdi-eyedropper</v-icon
@@ -224,34 +247,47 @@
           min="10"
           max="100"
           @end="setBrightness"
+          :disabled="!haveLights"
         ></v-slider>
       </v-col>
     </v-row>
 
-    <v-expansion-panels v-model="showLights">
-      <v-expansion-panel class="rounded-0">
-        <v-expansion-panel-title>
-          {{ room.lights.length }} Light{{
-            room.lights.length === 1 ? '' : 's'
-          }}
-        </v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <v-row no-gutters justify="center">
-            <v-col
-              xs="12"
-              sm="6"
-              md="4"
-              lg="3"
-              class="text-body-1 text-center text-muted"
-              v-for="(light, i) in room.lights ?? []"
-              :key="i"
-            >
-              <LightDisplay :room-id="room.id" :light="light"></LightDisplay>
-            </v-col>
-          </v-row>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+    <template v-if="haveLights">
+      <v-expansion-panels v-model="showLights">
+        <v-expansion-panel class="rounded-0">
+          <v-expansion-panel-title>
+            {{ room.lights.length }} Light{{
+              room.lights.length === 1 ? '' : 's'
+            }}
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <v-row no-gutters justify="center">
+              <v-col
+                xs="12"
+                sm="6"
+                md="4"
+                lg="3"
+                class="text-body-1 text-center text-muted"
+                v-for="(light, i) in room.lights"
+                :key="i"
+              >
+                <LightDisplay :room-id="room.id" :light="light"></LightDisplay>
+              </v-col>
+            </v-row>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
+    </template>
+    <template v-else>
+      <v-row no-gutters class="text-center font-weight-thin">
+        <v-col cols="12" class="text-h3 font-weight-thin pt-4">No lights</v-col>
+        <v-col cols="12" class="text-body pt-8">
+          You can create a light with the yellow
+          <span class="text-yellow">&plus;</span> button left of the room name
+          above.
+        </v-col>
+      </v-row>
+    </template>
 
     <v-dialog v-model="newLightDialog" max-width="300px">
       <v-card>
@@ -283,7 +319,8 @@ import {
   LightRequest,
   PowerMode,
   Room,
-  SceneMode,
+  Scene,
+  Scenes,
 } from '@/models';
 import { defineComponent } from 'vue';
 
@@ -317,12 +354,13 @@ export default defineComponent({
     deleteDialog: false,
     newLightDialog: false,
     name: '',
-    speed: 20,
-    brightness: 10,
-    scene: null as SceneMode | null,
+    speed: 100,
+    brightness: 100,
+    scene: null as Scene | null,
     showScenes: false,
     showPicker: false,
     showLights: [] as Array<number>,
+    scenes: Scenes,
   }),
 
   mounted() {
@@ -339,8 +377,27 @@ export default defineComponent({
   },
 
   computed: {
-    roomScene(): SceneMode | null {
-      return null;
+    haveLights(): boolean {
+      return this.room.lights.length > 0;
+    },
+
+    roomScene(): Scene | null {
+      if (this.room.lights.length === 0) {
+        return null;
+      }
+
+      const first = this.room.lights[0].status?.scene;
+      if (!first) {
+        return null;
+      }
+
+      for (let i = 1; i < this.room.lights.length; i++) {
+        if (this.room.lights[i].status?.scene !== first) {
+          return null;
+        }
+      }
+
+      return new Scene(first);
     },
 
     roomColor(): string | undefined {
@@ -430,16 +487,6 @@ export default defineComponent({
       }
       return this.name !== '';
     },
-
-    scenes(): string[] {
-      const names = [];
-      for (const scene in SceneMode) {
-        if (isNaN(Number(scene))) {
-          names.push(scene);
-        }
-      }
-      return names;
-    },
   },
 
   methods: {
@@ -477,7 +524,7 @@ export default defineComponent({
 
       if (this.scene !== null) {
         let req = new LightRequest();
-        req.setScene(this.scene, this.speed);
+        req.setScene(this.scene.mode, this.speed);
         await this.$api.roomLighting(this.room.id, req);
       }
     },

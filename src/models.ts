@@ -356,6 +356,7 @@ export enum SceneMode {
   GoldenWhite = 'GoldenWhite',
   Pulse = 'Pulse',
   Steampunk = 'Steampunk',
+  Diwali = 'Diwali',
 }
 
 export interface LightRequest {
@@ -440,3 +441,52 @@ export class LightRequest implements LightRequest {
     this.power = power;
   }
 }
+
+const CAMEL_SPACE_RE = /([a-z])([A-Z])/g;
+
+function camelSplit(word: string): string {
+  return word.replace(CAMEL_SPACE_RE, '$1 $2');
+}
+
+function sceneName(mode: SceneMode): string {
+  switch (mode) {
+    default:
+      return mode;
+
+    case SceneMode.PastelColors:
+    case SceneMode.WakeUp:
+    case SceneMode.WarmWhite:
+    case SceneMode.CoolWhite:
+    case SceneMode.NightLight:
+    case SceneMode.TrueColors:
+    case SceneMode.GoldenWhite:
+      return camelSplit(mode);
+
+    case SceneMode.Plantgrowth:
+      return 'Plant Growth';
+
+    case SceneMode.Deepdive:
+      return 'Deep Dive';
+
+    case SceneMode.TvTime:
+      return 'TV Time';
+  }
+}
+
+export class Scene {
+  mode: SceneMode;
+  name: string;
+
+  constructor(mode: SceneMode) {
+    this.mode = mode;
+    this.name = sceneName(this.mode);
+  }
+}
+
+const scenes = [];
+for (const mode in SceneMode) {
+  if (isNaN(Number(mode))) {
+    scenes.push(new Scene(mode as SceneMode));
+  }
+}
+export const Scenes = Object.freeze(scenes);

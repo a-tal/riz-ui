@@ -164,6 +164,8 @@
                       label="Scene"
                       v-model="scene"
                       :items="scenes"
+                      item-title="name"
+                      return-object
                     ></v-select>
                   </v-col>
 
@@ -243,7 +245,8 @@ import {
   Light,
   LightRequest,
   PowerMode,
-  SceneMode,
+  Scene,
+  Scenes,
 } from '@/models';
 import { defineComponent } from 'vue';
 
@@ -273,10 +276,11 @@ export default defineComponent({
     speed: 20,
     brightness: 10,
     editing: false,
-    scene: null as null | SceneMode,
+    scene: null as null | Scene,
     showPicker: false,
     showScenes: false,
     deleteDialog: false,
+    scenes: Scenes,
   }),
 
   mounted() {
@@ -330,16 +334,6 @@ export default defineComponent({
       }
     },
 
-    scenes(): string[] {
-      const names = [];
-      for (const scene in SceneMode) {
-        if (isNaN(Number(scene))) {
-          names.push(scene);
-        }
-      }
-      return names;
-    },
-
     canSave(): boolean {
       if (this.name !== this.light.name) {
         return this.name !== '' || this.ip !== this.light.ip;
@@ -369,10 +363,11 @@ export default defineComponent({
 
     async setScene() {
       this.showScenes = false;
-      let req = new LightRequest();
-      const scene = this.scene as SceneMode;
-      req.setScene(scene, this.speed);
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      if (this.scene) {
+        let req = new LightRequest();
+        req.setScene(this.scene.mode, this.speed);
+        await this.$api.lighting(this.roomId, this.light.id, req);
+      }
     },
 
     async setBrightness() {
@@ -449,8 +444,12 @@ export default defineComponent({
         this.name = this.light.name;
       }
       this.ip = this.light.ip;
-      this.brightness = this.light.status?.brightness?.value ?? 10;
-      this.speed = this.light.status?.speed?.value ?? 20;
+      this.brightness = this.light.status?.brightness?.value ?? 100;
+      this.speed = this.light.status?.speed?.value ?? 100;
+
+      if (this.light.status?.scene) {
+        this.scene = new Scene(this.light.status.scene);
+      }
     },
   },
 });

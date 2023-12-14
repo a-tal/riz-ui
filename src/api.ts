@@ -119,7 +119,8 @@ export class DemoAPI implements API {
     this.updateLighting(req, roomId);
   }
 
-  async status(_roomId: string, _lightId?: string): Promise<void> {
+  async status(roomId: string, lightId?: string): Promise<void> {
+    console.log('Unable to get status, no API backend', roomId, lightId);
     return;
   }
 

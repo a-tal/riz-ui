@@ -51,7 +51,7 @@
       :style="{ height: `${rail ? 58 : 58}px !important` }"
     >
       <template v-slot:default>
-        <CreateRoom></CreateRoom>
+        <CreateRoom @create="rail = true"></CreateRoom>
       </template>
 
       <template v-slot:prepend>

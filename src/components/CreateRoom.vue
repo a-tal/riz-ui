@@ -53,6 +53,7 @@ export default defineComponent({
       if (!this.createDisabled) {
         await this.$api.createRoom(this.name);
         this.name = '';
+        this.$emit('create');
       }
     },
   },
