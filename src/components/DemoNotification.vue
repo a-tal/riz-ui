@@ -4,7 +4,7 @@
     density="compact"
     height="42"
     class="text-muted"
-    v-if="isDemo"
+    v-if="$api.demo"
   >
     <p class="self-align-center">
       Demo mode.
@@ -24,11 +24,5 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'DemoNotification',
-
-  computed: {
-    isDemo(): boolean {
-      return this.$api.constructor.name === 'DemoAPI';
-    },
-  },
 });
 </script>

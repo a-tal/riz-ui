@@ -18,6 +18,7 @@ const HEADERS = Object.freeze({
 export interface API {
   rooms: Ref<Array<Room>>;
   loaded: Ref<boolean>;
+  demo: boolean;
 
   fetchRooms(): Promise<void>;
   fetchRoom(room: string): Promise<Room | boolean>;
@@ -40,10 +41,12 @@ export interface API {
 export class DemoAPI implements API {
   rooms: Ref<Array<Room>>;
   loaded: Ref<boolean>;
+  demo: boolean;
 
   constructor() {
     this.rooms = ref(new Array<Room>());
     this.loaded = ref(false);
+    this.demo = true;
   }
 
   async fetchRooms(): Promise<void> {
@@ -138,6 +141,11 @@ export class DemoAPI implements API {
 }
 
 export class API extends DemoAPI {
+  constructor() {
+    super();
+    this.demo = false;
+  }
+
   // GET: /rooms
   async fetchRooms(): Promise<void> {
     if (!this.loaded.value) {
