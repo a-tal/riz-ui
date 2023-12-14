@@ -1,0 +1,33 @@
+name: Demo
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  build_demo:
+    runs-on: ubuntu-latest
+
+    env:
+      VUE_APP_RIZ_API: __DEMO__
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build --if-present
+
+      - name: Publish dist to GitHub Pages
+        uses: tsunematsu21/actions-publish-gh-pages@v1.0.2
+        with:
+          dir: dist
+          branch: gh-pages
+          token: ${{ secrets.ACCESS_TOKEN }}
