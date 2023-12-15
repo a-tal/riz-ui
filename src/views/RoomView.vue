@@ -17,8 +17,9 @@
 </template>
 
 <script lang="ts">
-import { Room } from '@/models';
 import { defineComponent } from 'vue';
+
+import { Room } from '@/models';
 
 import LoadingCircle from '@/components/LoadingCircle.vue';
 import RoomDisplay from '@/components/RoomDisplay.vue';

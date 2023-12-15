@@ -1,3 +1,6 @@
+import { v4 } from 'uuid';
+import { Ref, ref } from 'vue';
+
 import {
   Light,
   LightRequest,
@@ -6,8 +9,6 @@ import {
   iLight,
   iRoom,
 } from '@/models';
-import { v4 } from 'uuid';
-import { Ref, ref } from 'vue';
 
 const BASE = process.env.VUE_APP_RIZ_API ?? '/v1';
 
@@ -21,7 +22,7 @@ export interface API {
   demo: boolean;
 
   fetchRooms(): Promise<void>;
-  fetchRoom(room: string): Promise<Room | boolean>;
+  fetchRoom(room: string): Promise<Room>;
   createRoom(name: string): Promise<void>;
   updateRoom(id: string, name: string): Promise<void>;
   deleteRoom(id: string): Promise<void>;
@@ -55,7 +56,7 @@ export class DemoAPI implements API {
     }
   }
 
-  async fetchRoom(room: string): Promise<boolean | Room> {
+  async fetchRoom(room: string): Promise<Room> {
     return new Room(room, 'Demo Room');
   }
 
@@ -156,10 +157,7 @@ export class API extends DemoAPI {
 
         for (const room of data) {
           const room_json = await this.fetchRoom(room);
-          if (room_json == false) {
-            return;
-          }
-          rooms.push(room_json as Room);
+          rooms.push(room_json);
         }
       } catch (e) {
         console.error(e);
@@ -177,31 +175,22 @@ export class API extends DemoAPI {
   }
 
   // GET: /room/{id}
-  async fetchRoom(room: string): Promise<Room | boolean> {
-    try {
-      const resp = await fetch(`${BASE}/room/${room}`);
-      const data: iRoom = await resp.json();
-      return new Room(room, data.name, data.lights);
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
+  async fetchRoom(room: string): Promise<Room> {
+    const resp = await fetch(`${BASE}/room/${room}`);
+    const data: iRoom = await resp.json();
+    return new Room(room, data.name, data.lights);
   }
 
   // POST: /rooms
   async createRoom(name: string): Promise<void> {
     const payload: iRoom = { name };
-    try {
-      const resp = await fetch(`${BASE}/rooms`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: HEADERS,
-      });
-      const id: string = await resp.json();
-      this.rooms.value.push(new Room(id, name));
-    } catch (e) {
-      console.error('Failed to create room:', e);
-    }
+    const resp = await fetch(`${BASE}/rooms`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: HEADERS,
+    });
+    const id: string = await resp.json();
+    this.rooms.value.push(new Room(id, name));
   }
 
   // PATCH: /room/{id}
@@ -222,17 +211,13 @@ export class API extends DemoAPI {
   async deleteRoom(id: string): Promise<void> {
     const room = this.rooms.value.find((r) => r.id === id);
     if (room) {
-      try {
-        await fetch(`${BASE}/room/${room.id}`, { method: 'DELETE' });
-        this.rooms.value.splice(
-          this.rooms.value.findIndex((r) => r.id === id),
-          1,
-        );
-      } catch (e) {
-        console.error('Failed to delete room:', e);
-      }
+      await fetch(`${BASE}/room/${room.id}`, { method: 'DELETE' });
+      this.rooms.value.splice(
+        this.rooms.value.findIndex((r) => r.id === id),
+        1,
+      );
     } else {
-      console.error('Unknown room id:', id);
+      throw new Error(`Unknown room id: ${id}`);
     }
   }
 
@@ -241,18 +226,14 @@ export class API extends DemoAPI {
     const room = this.rooms.value.find((r) => r.id === roomId);
     if (room) {
       const payload: iLight = { ip, name };
-      try {
-        const resp = await fetch(`${BASE}/room/${roomId}/lights`, {
-          method: 'POST',
-          body: JSON.stringify(payload),
-          headers: HEADERS,
-        });
-        const lightId: string = await resp.json();
-        if (!room.addLight(new Light(lightId, ip, name))) {
-          console.error('Failed to add light (already known?)');
-        }
-      } catch (e) {
-        console.error('Failed to create light:', e);
+      const resp = await fetch(`${BASE}/room/${roomId}/lights`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: HEADERS,
+      });
+      const lightId: string = await resp.json();
+      if (!room.addLight(new Light(lightId, ip, name))) {
+        console.error('Failed to add light (already known?)');
       }
     }
   }
@@ -270,25 +251,21 @@ export class API extends DemoAPI {
       if (light) {
         if (light.ip !== ip || light.name !== name) {
           const payload: iLight = { ip, name };
-          try {
-            await fetch(`${BASE}/room/${roomId}/light/${lightId}`, {
-              method: 'PATCH',
-              body: JSON.stringify(payload),
-              headers: HEADERS,
-            });
-            light.ip = ip;
-            light.name = name;
-          } catch (e) {
-            console.error('Failed to update light:', e);
-          }
+          await fetch(`${BASE}/room/${roomId}/light/${lightId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+            headers: HEADERS,
+          });
+          light.ip = ip;
+          light.name = name;
         } else {
-          console.error('Nothing to update in light');
+          throw new Error('Nothing to update in light');
         }
       } else {
-        console.error('Failed to update light (unknown light)');
+        throw new Error('Failed to update light (unknown light)');
       }
     } else {
-      console.error('Failed to update light (unknown room)');
+      throw new Error('Failed to update light (unknown room)');
     }
   }
 
@@ -298,19 +275,15 @@ export class API extends DemoAPI {
     if (room) {
       const light = room.lights.find((l) => l.id === lightId);
       if (light) {
-        try {
-          await fetch(`${BASE}/room/${roomId}/light/${lightId}`, {
-            method: 'DELETE',
-          });
-          room.removeLight(light);
-        } catch (e) {
-          console.error('Failed to delete light:', e);
-        }
+        await fetch(`${BASE}/room/${roomId}/light/${lightId}`, {
+          method: 'DELETE',
+        });
+        room.removeLight(light);
       } else {
-        console.error('Failed to delete light (unknown light)');
+        throw new Error('Failed to delete light (unknown light)');
       }
     } else {
-      console.error('Failed to delete light (unknown room)');
+      throw new Error('Failed to delete light (unknown room)');
     }
   }
 
@@ -320,36 +293,31 @@ export class API extends DemoAPI {
     lightId: string,
     req: LightRequest,
   ): Promise<void> {
-    const data = JSON.stringify(req);
-    if (data !== '{}') {
-      try {
-        fetch(`${BASE}/room/${roomId}/light/${lightId}`, {
-          method: 'PUT',
-          body: data,
-          headers: HEADERS,
-        });
-        this.updateLighting(req, roomId, lightId);
-      } catch (e) {
-        console.error('Failed to update lighting:', e);
-      }
+    if (!req.valid()) {
+      throw new Error('Invalid payload');
     }
+    fetch(`${BASE}/room/${roomId}/light/${lightId}`, {
+      method: 'PUT',
+      body: JSON.stringify(req),
+      headers: HEADERS,
+    });
+    this.updateLighting(req, roomId, lightId);
   }
 
   // PUT: /room/{id}/lights
   async roomLighting(roomId: string, req: LightRequest): Promise<void> {
     const data = JSON.stringify(req);
-    if (data !== '{}') {
-      try {
-        fetch(`${BASE}/room/${roomId}/lights`, {
-          method: 'PUT',
-          body: data,
-          headers: HEADERS,
-        });
-        this.updateLighting(req, roomId);
-      } catch (e) {
-        console.error('Failed to update room lighting:', e);
-      }
+
+    if (!req.valid()) {
+      throw new Error('Invalid payload');
     }
+
+    fetch(`${BASE}/room/${roomId}/lights`, {
+      method: 'PUT',
+      body: data,
+      headers: HEADERS,
+    });
+    this.updateLighting(req, roomId);
   }
 
   // GET /room/{id}/status
@@ -358,42 +326,39 @@ export class API extends DemoAPI {
     const route = `/room/${roomId}/${
       lightId === undefined ? '' : `light/${lightId}/`
     }status`;
-    try {
-      const resp = await fetch(`${BASE}${route}`);
-      if (lightId === undefined) {
-        const room: iRoom = await resp.json();
-        console.log('room resp', room);
-        if (room.lights === undefined) {
-          return;
-        }
-        for (const known of this.rooms.value) {
-          if (known.id === roomId) {
-            for (const id in room.lights) {
-              for (const knownLight of known.lights) {
-                if (knownLight.id === id) {
-                  knownLight.updateStatus(room.lights[id].status);
-                  break;
-                }
+    const resp = await fetch(`${BASE}${route}`);
+    if (lightId === undefined) {
+      const room: iRoom = await resp.json();
+
+      if (room.lights === undefined) {
+        return;
+      }
+
+      for (const known of this.rooms.value) {
+        if (known.id === roomId) {
+          for (const id in room.lights) {
+            for (const knownLight of known.lights) {
+              if (knownLight.id === id) {
+                knownLight.updateStatus(room.lights[id].status);
+                break;
               }
             }
-            return;
           }
+          return;
         }
-      } else {
-        const status: LightStatus = await resp.json();
-        for (const known of this.rooms.value) {
-          if (known.id === roomId) {
-            for (const knownLight of known.lights) {
-              if (knownLight.id === lightId) {
-                knownLight.updateStatus(status);
-                return;
-              }
+      }
+    } else {
+      const status: LightStatus = await resp.json();
+      for (const known of this.rooms.value) {
+        if (known.id === roomId) {
+          for (const knownLight of known.lights) {
+            if (knownLight.id === lightId) {
+              knownLight.updateStatus(status);
+              return;
             }
           }
         }
       }
-    } catch (e) {
-      console.error('Failed to get status:', e);
     }
   }
 }

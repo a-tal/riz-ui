@@ -5,7 +5,7 @@
   "singleQuote": true,
   "jsxBracketSameLine": true,
   "semi": true,
-  "importOrder": ["^@/utils.js$", "^@/api.js$", "^@/views/(.*)$", "^@/models/(.*)$", "^@/components/(.*)$", "^[./]"],
+  "importOrder": ["^@/models$", "^@/api$", "^@/views/(.*)$", "^@/components/(.*)$", "^[./]"],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true
 }

@@ -5,7 +5,7 @@ if [[ "$1" == "--container" ]] || [[ "$1" == "-c" ]]; then
   CONTAINER=true
 fi
 
-export VUE_APP_RIZ_API="__DEMO__"
+export VUE_APP_RIZ_API="${RIZ_API:-__DEMO__}"
 
 if $CONTAINER; then
   npm run build || { echo "build failure"; exit 1; }

@@ -239,6 +239,8 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue';
+
 import {
   Color,
   LastSet,
@@ -248,7 +250,6 @@ import {
   Scene,
   Scenes,
 } from '@/models';
-import { defineComponent } from 'vue';
 
 import ColorPicker from '@/components/ColorPicker.vue';
 
@@ -343,22 +344,31 @@ export default defineComponent({
   },
 
   methods: {
+    async setLighting(req: LightRequest) {
+      try {
+        await this.$api.lighting(this.roomId, this.light.id, req);
+      } catch (e) {
+        console.log(e);
+        this.error('Failed to update lighting');
+      }
+    },
+
     async powerOn() {
       let req = new LightRequest();
       req.setPower(PowerMode.On);
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async powerOff() {
       let req = new LightRequest();
       req.setPower(PowerMode.Off);
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async powerCycle() {
       let req = new LightRequest();
       req.setPower(PowerMode.Reboot);
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async setScene() {
@@ -366,14 +376,14 @@ export default defineComponent({
       if (this.scene) {
         let req = new LightRequest();
         req.setScene(this.scene.mode, this.speed);
-        await this.$api.lighting(this.roomId, this.light.id, req);
+        await this.setLighting(req);
       }
     },
 
     async setBrightness() {
       let req = new LightRequest();
       req.setBrightness(this.brightness);
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async setCool(cool: number) {
@@ -382,7 +392,7 @@ export default defineComponent({
       let req = new LightRequest();
       req.setCool(cool);
 
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async setWarm(warm: number) {
@@ -391,7 +401,7 @@ export default defineComponent({
       let req = new LightRequest();
       req.setWarm(warm);
 
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async setTemperature(temp: number) {
@@ -400,7 +410,7 @@ export default defineComponent({
       let req = new LightRequest();
       req.setTemp(temp);
 
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async setColor(color: string) {
@@ -412,25 +422,41 @@ export default defineComponent({
       let req = new LightRequest();
       req.setColor(colorObj);
 
-      await this.$api.lighting(this.roomId, this.light.id, req);
+      await this.setLighting(req);
     },
 
     async onSave() {
-      await this.$api.updateLight(
-        this.roomId,
-        this.light.id,
-        this.ip,
-        this.name,
-      );
+      try {
+        await this.$api.updateLight(
+          this.roomId,
+          this.light.id,
+          this.ip,
+          this.name,
+        );
+      } catch (e) {
+        console.log(e);
+        this.error('Failed to save light');
+        return;
+      }
       this.editing = false;
     },
 
     async getStatus() {
-      await this.$api.status(this.roomId, this.light.id);
+      try {
+        await this.$api.status(this.roomId, this.light.id);
+      } catch (e) {
+        console.log(e);
+        this.error('Failed to fetch status');
+      }
     },
 
     async onDelete() {
-      await this.$api.deleteLight(this.roomId, this.light.id);
+      try {
+        await this.$api.deleteLight(this.roomId, this.light.id);
+      } catch (e) {
+        console.log(e);
+        this.error('Failed to delete light');
+      }
     },
 
     cancelEdit() {

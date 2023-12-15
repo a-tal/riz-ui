@@ -1,6 +1,7 @@
-import { API, createAPI } from '@/api';
 import '@/styles/style.scss';
-import { createApp } from 'vue';
+import { Ref, createApp, ref } from 'vue';
+
+import { API, createAPI } from '@/api';
 
 import App from './App.vue';
 import vuetify from './plugins/vuetify';
@@ -18,11 +19,23 @@ loadFonts();
 
 const app = createApp(App);
 
+const snack = ref(false);
+const error = ref('');
+
 app.config.globalProperties.$api = createAPI();
+app.config.globalProperties.$snack = snack;
+app.config.globalProperties.$error = error;
+app.config.globalProperties.error = (msg: string) => {
+  error.value = msg;
+  snack.value = true;
+};
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $api: API;
+    $snack: Ref<boolean>;
+    $error: Ref<string>;
+    error: (msg: string) => void;
   }
 }
 

@@ -37,12 +37,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 
-// this is technically correct, but do people ever actually mean to use
-// IPv4 shorthand? probably not... no one else even knows about it...
-// also, because the rust std lib doesn't parse shorthand if used
-// the request will fail when the api fails to parse...
+// this IP_RE doesn't match shorthand ip addresses. rust std lib flags
+// shorthand as invalid anyway. so, might as well invalidate it client
+// side too. a regex allowing for shorthand would look something like:
+// /^(((1[\d]{0,2})|(2([0-4]?[\d]|5[0-5]))|([3-9]?[\d])|[\d])\.){0,3}((1[\d]{0,2})|(2([0-4]?[\d]|5[0-5]))|([3-9]?[\d])|[\d])$/
 const IP_RE =
-  /^(((1[\d]{0,2})|(2([0-4]?[\d]|5[0-5]))|([3-9]?[\d])|[\d])\.){0,3}((1[\d]{0,2})|(2([0-4]?[\d]|5[0-5]))|([3-9]?[\d])|[\d])$/;
+  /^(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))$/;
 
 export default defineComponent({
   name: 'CreateLight',
@@ -72,13 +72,19 @@ export default defineComponent({
   methods: {
     async onCreate(): Promise<void> {
       if (this.ipaddr.match(IP_RE)) {
-        await this.$api.createLight(
-          this.roomId,
-          this.ipaddr,
-          this.lightName === '' ? undefined : this.lightName,
-        );
-        this.ipaddr = '';
-        this.lightName = '';
+        try {
+          await this.$api.createLight(
+            this.roomId,
+            this.ipaddr,
+            this.lightName === '' ? undefined : this.lightName,
+          );
+          this.ipaddr = '';
+          this.lightName = '';
+          this.$emit('create');
+        } catch (e) {
+          console.log(e);
+          this.error('Invalid or duplicate IP');
+        }
       }
     },
   },

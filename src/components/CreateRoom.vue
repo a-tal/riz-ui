@@ -31,8 +31,9 @@
 </template>
 
 <script lang="ts">
-import { Light } from '@/models';
 import { defineComponent } from 'vue';
+
+import { Light } from '@/models';
 
 export default defineComponent({
   name: 'CreateRoom',
@@ -51,7 +52,13 @@ export default defineComponent({
   methods: {
     async onCreate() {
       if (!this.createDisabled) {
-        await this.$api.createRoom(this.name);
+        try {
+          await this.$api.createRoom(this.name);
+        } catch (e) {
+          console.log(e);
+          this.error('Failed to create room');
+          return;
+        }
         this.name = '';
         this.$emit('create');
       }
