@@ -489,4 +489,5 @@ for (const mode in SceneMode) {
     scenes.push(new Scene(mode as SceneMode));
   }
 }
+scenes.sort((a, b) => a.name.localeCompare(b.name));
 export const Scenes = Object.freeze(scenes);
