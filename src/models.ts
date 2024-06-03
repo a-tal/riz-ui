@@ -77,6 +77,7 @@ export class Light {
   register(callback: () => void): void {
     this.lightCallback = callback;
   }
+
   registerRoom(callback: () => void): void {
     this.roomCallback = callback;
   }
